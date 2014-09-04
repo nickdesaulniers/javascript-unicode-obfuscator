@@ -1,0 +1,10 @@
+{
+  "name": "javascript-unicode-obfuscator",
+  "version": "0.0.0",
+  "description": "Convert your js to fun unicode",
+  "bin": {
+    "javascript-unicode-obfuscator": "bin/bin.js"
+  },
+  "author": "Nick Desaulniers",
+  "license": "Beerware"
+}
