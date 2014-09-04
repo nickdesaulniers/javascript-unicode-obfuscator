@@ -25,4 +25,11 @@ a === b && true && a.b;
 [];
 var d = function c () {};
 (function e () {})();
+if (false) {
+  console.log('unreachable');
+} else if (false) {
+  console.log(1);
+} else {
+  console.log(2);
+}
 

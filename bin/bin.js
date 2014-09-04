@@ -65,15 +65,16 @@ var handler = {
         output += ', ';
       }
     }
-    output += ') {\n';
+    output += ') ';
     handler[node.body.type](node.body);
-    output += '}';
   },
   FunctionExpression: function (node) {
     output += '(';
     handler._toUnicodeStr2('function');
     output += ' ';
-    handler[node.id.type](node.id);
+    if (node.id) {
+      handler[node.id.type](node.id);
+    }
     output += ' (';
     for (var i = 0; i < node.params.length; ++i) {
       handler[node.params[i].type](node.params[i]);
@@ -81,15 +82,17 @@ var handler = {
         output += ', ';
       }
     }
-    output += ') {\n';
+    output += ') ';
     handler[node.body.type](node.body);
-    output += '})';
+    output += ')';
   },
   BlockStatement: function (node) {
+    output += '{\n';
     for (var i = 0; i < node.body.length; ++i) {
       handler[node.body[i].type](node.body[i]);
       output += ';\n';
     }
+    output += '}';
   },
   EmptyStatement: function () {},
   LogicalExpression: function (node) {
@@ -112,6 +115,17 @@ var handler = {
       handler[node.object.type](node.object);
       output += '.';
       handler[node.property.type](node.property);
+    }
+  },
+  IfStatement: function (node) {
+    console.log(node);
+    output += 'if (';
+    handler[node.test.type](node.test);
+    output += ') '
+    handler[node.consequent.type](node.consequent);
+    if (node.alternate) {
+      output += ' else ';
+      handler[node.alternate.type](node.alternate);
     }
   },
   ConditionalExpression: function (node) {
