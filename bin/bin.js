@@ -55,6 +55,9 @@ var handler = {
     output += '(';
     for (var i = 0; i < node.arguments.length; ++i) {
       handler[node.arguments[i].type](node.arguments[i]);
+      if (i !== node.arguments.length - 1) {
+        output += ', ';
+      }
     }
     output += ')';
   },
@@ -100,9 +103,21 @@ var handler = {
   },
   EmptyStatement: function () {},
   LogicalExpression: function (node) {
+    if (node.left.type === 'AssignmentExpression') {
+      output += '('
+    }
     handler[node.left.type](node.left);
+    if (node.left.type === 'AssignmentExpression') {
+      output += ')'
+    }
     output += ' ' + node.operator + ' ';
+    if (node.right.type === 'AssignmentExpression') {
+      output += '('
+    }
     handler[node.right.type](node.right);
+    if (node.right.type === 'AssignmentExpression') {
+      output += ')'
+    }
   },
   BinaryExpression: function (node) {
     handler[node.left.type](node.left);
@@ -149,9 +164,21 @@ var handler = {
       } else {
         output += node.operator;
       }
+      if (node.argument.type === 'AssignmentExpression') {
+        output += '(';
+      }
       handler[node.argument.type](node.argument);
+      if (node.argument.type === 'AssignmentExpression') {
+        output += ')';
+      }
     } else {
+      if (node.argument.type === 'AssignmentExpression') {
+        output += '(';
+      }
       handler[node.argument.type](node.argument);
+      if (node.argument.type === 'AssignmentExpression') {
+        output += ')';
+      }
       output += node.operator;
     }
   },
@@ -167,16 +194,19 @@ var handler = {
   },
   VariableDeclaration: function (node) {
     if (node.kind === 'var') {
+      handler._toUnicodeStr2('var');
+      output += ' ';
       for (var i = 0; i < node.declarations.length; ++i) {
         handler[node.declarations[i].type](node.declarations[i]);
+        if (i !== node.declarations.length - 1) {
+          output += ', ';
+        }
       }
     } else {
       console.error('Unknown kind of variable declaration');
     }
   },
   VariableDeclarator: function (node) {
-    handler._toUnicodeStr2('var');
-    output += ' ';
     handler[node.id.type](node.id);
     if (node.init) {
       output += ' = ';
@@ -204,8 +234,11 @@ var handler = {
     output += ')';
   },
   ReturnStatement: function (node) {
-    output += 'return ';
-    handler[node.argument.type](node.argument);
+    output += 'return';
+    if (node.argument) {
+      output += ' ';
+      handler[node.argument.type](node.argument);
+    }
   },
   ThisExpression: function (node) {
     handler._toUnicodeStr2('this');
@@ -222,7 +255,8 @@ var handler = {
   },
   UpdateExpression: function (node) {
     if (node.prefix) {
-      console.error('XXX upd pref');
+      output += node.operator;
+      handler[node.argument.type](node.argument);
     } else {
       handler[node.argument.type](node.argument);
       output += node.operator;
@@ -307,6 +341,24 @@ var handler = {
     handler[node.param.type](node.param);
     output += ') ';
     handler[node.body.type](node.body);
+  },
+  DoWhileStatement: function (node) {
+    handler._toUnicodeStr2('do');
+    output += ' ';
+    handler[node.body.type](node.body);
+    output += ' ';
+    handler._toUnicodeStr2('while');
+    output += ' (';
+    handler[node.test.type](node.test);
+    output += ')';
+  },
+  SequenceExpression: function (node) {
+    for (var i = 0; i < node.expressions.length; ++i) {
+      handler[node.expressions[i].type](node.expressions[i]);
+      if (i !== node.expressions.length - 1) {
+        output += ', ';
+      }
+    }
   },
 };
 
