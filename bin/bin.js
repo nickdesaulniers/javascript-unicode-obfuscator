@@ -13,6 +13,7 @@ function lPad (input) {
 };
 
 var inString = false;
+var inEscape = 0;
 
 for (var i = 0; i < input.length; ++i) {
   var unicode = input[i].charCodeAt().toString(16);
@@ -20,6 +21,21 @@ for (var i = 0; i < input.length; ++i) {
   if (unicode == 27 || unicode == 22) {
     inString = !inString;
     output += input[i];
+  } else if (inEscape > 0) {
+    output += input[i];
+    --inEscape;
+  } else if (unicode === '5c') {
+    // \
+    output += input[i];
+    if (input[i + 1] === 'x') {
+      inEscape += 3;
+    } else if (input[i + 1] === 'd') {
+      inEscape += 4;
+    } else if (input[i + 1] === 'u') {
+      inEscape += 5;
+    } else {
+      inEscape += 1;
+    }
   } else if (unicode == 28 || unicode == 29 || unicode == 27 ||
              unicode === '3b' || unicode == 'a') {
     // ( ) ; <return>
