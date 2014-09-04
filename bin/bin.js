@@ -114,7 +114,10 @@ var handler = {
   },
   MemberExpression: function (node) {
     if (node.computed) {
-      console.error('XXX computed member expression');
+      handler[node.object.type](node.object);
+      output += '[';
+      handler[node.property.type](node.property);
+      output += ']';
     } else {
       handler[node.object.type](node.object);
       output += '.';
@@ -140,7 +143,12 @@ var handler = {
   },
   UnaryExpression: function (node) {
     if (node.prefix) {
-      output += node.operator;
+      if (node.operator === 'void') {
+        handler._toUnicodeStr2('void');
+        output += ' ';
+      } else {
+        output += node.operator;
+      }
       handler[node.argument.type](node.argument);
     } else {
       handler[node.argument.type](node.argument);
@@ -150,7 +158,10 @@ var handler = {
   ArrayExpression: function (node) {
     output += '[';
     for (var i = 0; i < node.elements.length; ++i) {
-      console.error('XXX Arr');
+      handler[node.elements[i].type](node.elements[i]);
+      if (i !== node.elements.length - 1) {
+        output += ', ';
+      }
     }
     output += ']';
   },
@@ -208,6 +219,94 @@ var handler = {
       output += ',\n';
     }
     output += '}';
+  },
+  UpdateExpression: function (node) {
+    if (node.prefix) {
+      console.error('XXX upd pref');
+    } else {
+      handler[node.argument.type](node.argument);
+      output += node.operator;
+    }
+  },
+  ForStatement: function (node) {
+    handler._toUnicodeStr2('for');
+    output += ' (';
+    if (node.init) {
+      handler[node.init.type](node.init);
+    }
+    output += ';';
+    if (node.test) {
+      output += ' ';
+      handler[node.test.type](node.test);
+    }
+    output += ';';
+    if (node.upate) {
+      output += ' ';
+      handler[node.update.type](node.update);
+    }
+    output += ') ';
+    handler[node.body.type](node.body);
+  },
+  ForInStatement: function (node) {
+    if (node.each) {
+      console.error('XXX ForIn each');
+      console.log(node);
+    }
+    handler._toUnicodeStr2('for');
+    output += ' (';
+    handler[node.left.type](node.left);
+    output += ' in '; // can we unicode?
+    handler[node.right.type](node.right);
+    output += ') ';
+    handler[node.body.type](node.body);
+  },
+  ContinueStatement: function (node) {
+    if (node.label) {
+      console.error('XXX Con label');
+      console.log(node);
+    }
+    handler._toUnicodeStr2('continue');
+  },
+  WhileStatement: function (node) {
+    handler._toUnicodeStr2('while');
+    output += ' (';
+    handler[node.test.type](node.test);
+    output += ') ';
+    handler[node.body.type](node.body);
+  },
+  BreakStatement: function (node) {
+    if (node.label) {
+      console.error('XXX bre label');
+      console.log(node);
+    }
+    handler._toUnicodeStr2('break');
+  },
+  TryStatement: function (node) {
+    if (node.guardedHandlers.length) {
+      console.error('XXX Try guard');
+      console.log(node);
+    }
+    handler._toUnicodeStr2('try');
+    output += ' ';
+    handler[node.block.type](node.block);
+    for (var i = 0; i < node.handlers.length; ++i) {
+      output += ' ';
+      handler._toUnicodeStr2('catch');
+      output += ' ';
+      handler[node.handlers[i].type](node.handlers[i]);
+    }
+    if (node.finalizer) {
+      output += ' ';
+      handler._toUnicodeStr2('finally');
+      output += ' ';
+      handler[node.finalizer.type](node.finalizer);
+    }
+  },
+  CatchClause: function (node) {
+    output += '(';
+    handler[node.param.type](node.param);
+    output += ') ';
+    handler[node.body.type](node.body);
   },
 };
 
