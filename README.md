@@ -24,6 +24,5 @@ form such as open paren, close paren, single quote, semi colon, and return.
 Within a string, chars can be converted to `\xXX` form.
 
 ##Disclaimer
-Not tested much at all.  Probably doesn't work with numerous other characters
-and code that's already been escaped.
+Not tested much at all.
 

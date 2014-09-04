@@ -12,14 +12,19 @@ function lPad (input) {
   return input;
 };
 
-var inString = false;
+var inSingleQuote = false;
+var inDoubleQuote = false;
 var inEscape = 0;
 
 for (var i = 0; i < input.length; ++i) {
   var unicode = input[i].charCodeAt().toString(16);
-  // ' "
-  if (unicode == 27 || unicode == 22) {
-    inString = !inString;
+  // '
+  if (unicode == 27 && !inDoubleQuote) {
+    inSingleQuote = !inSingleQuote;
+    output += input[i];
+  } else if (unicode == 22 && !inSingleQuote) {
+    // "
+    inDoubleQuote = !inDoubleQuote;
     output += input[i];
   } else if (inEscape > 0) {
     output += input[i];
@@ -36,11 +41,11 @@ for (var i = 0; i < input.length; ++i) {
     } else {
       inEscape += 1;
     }
-  } else if (unicode == 28 || unicode == 29 || unicode == 27 ||
-             unicode === '3b' || unicode == 'a') {
+  } else if (unicode == 28 || unicode == 29 || unicode === '3b' ||
+             unicode == 'a') {
     // ( ) ; <return>
     output += input[i];
-  } else if (inString) {
+  } else if (inSingleQuote || inDoubleQuote) {
     output += '\\x' + unicode;
   } else {
     output += '\\u' + lPad(unicode);
