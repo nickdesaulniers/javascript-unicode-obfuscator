@@ -16,12 +16,13 @@ var inString = false;
 
 for (var i = 0; i < input.length; ++i) {
   var unicode = input[i].charCodeAt().toString(16);
-  if (unicode == 27) {
+  // ' "
+  if (unicode == 27 || unicode == 22) {
     inString = !inString;
     output += input[i];
   } else if (unicode == 28 || unicode == 29 || unicode == 27 ||
              unicode === '3b' || unicode == 'a') {
-    // ( ) ' ; <return>
+    // ( ) ; <return>
     output += input[i];
   } else if (inString) {
     output += '\\x' + unicode;
