@@ -9,15 +9,20 @@ alert("''");
 alert("");//
 //alert()
 /*alert(*/
-(/*alert();*/)
+(42/*alert();*/)
 alert('/* // */');
 // /* */
 /* // */
 '/* \/\/ */';
 // ''
 function a () {};
-function b (a, k) {};
+function b (a, k) {
+  console.log('hello');
+  console.log('world');
+};
 a === b && true && a.b;
 !!true ? true : false;
 [];
+var d = function c () {};
+(function e () {})();
 

@@ -6,5 +6,8 @@
     "javascript-unicode-obfuscator": "bin/bin.js"
   },
   "author": "Nick Desaulniers",
-  "license": "Beerware"
+  "license": "Beerware",
+  "dependencies": {
+    "esprima": "^1.2.2"
+  }
 }
