@@ -39,6 +39,10 @@ var handler = {
     } else if (typeof node.value === 'boolean'){
       //output += node.value;
       handler._toUnicodeStr2(node.value.toString());
+    } else if (node.value instanceof RegExp) {
+      output += node.raw;
+    } else if (node.value === null) {
+      handler._toUnicodeStr2('null');
     } else {
       console.error('Unkown literal type', node.value);
     }
@@ -110,7 +114,7 @@ var handler = {
   },
   MemberExpression: function (node) {
     if (node.computed) {
-      console.err('XXX computed member expression');
+      console.error('XXX computed member expression');
     } else {
       handler[node.object.type](node.object);
       output += '.';
@@ -118,7 +122,6 @@ var handler = {
     }
   },
   IfStatement: function (node) {
-    console.log(node);
     output += 'if (';
     handler[node.test.type](node.test);
     output += ') '
@@ -161,12 +164,50 @@ var handler = {
     }
   },
   VariableDeclarator: function (node) {
-    //output += 'var ';
     handler._toUnicodeStr2('var');
     output += ' ';
     handler[node.id.type](node.id);
-    output += ' = ';
-    handler[node.init.type](node.init);
+    if (node.init) {
+      output += ' = ';
+      handler[node.init.type](node.init);
+    }
+  },
+  AssignmentExpression: function (node) {
+    handler[node.left.type](node.left);
+    output += ' ' + node.operator + ' ';
+    handler[node.right.type](node.right);
+  },
+  ThrowStatement: function (node) {
+    output += 'throw ';
+    handler[node.argument.type](node.argument);
+  },
+  NewExpression: function (node) {
+    handler[node.callee.type](node.callee);
+    output += ' (';
+    for (var i = 0; i < node.arguments.length; ++i) {
+      handler[node.arguments[i].type](node.arguments[i]);
+      if (i !== node.arguments.length - 1) {
+        output += ', ';
+      }
+    }
+    output += ')';
+  },
+  ReturnStatement: function (node) {
+    output += 'return ';
+    handler[node.argument.type](node.argument);
+  },
+  ThisExpression: function (node) {
+    handler._toUnicodeStr2('this');
+  },
+  ObjectExpression: function (node) {
+    output += '{\n';
+    for (var i = 0; i < node.properties.length; ++i) {
+      handler[node.properties[i].key.type](node.properties[i].key);
+      output += ': ';
+      handler[node.properties[i].value.type](node.properties[i].value);
+      output += ',\n';
+    }
+    output += '}';
   },
 };
 
