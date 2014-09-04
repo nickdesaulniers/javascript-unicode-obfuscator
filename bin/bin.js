@@ -14,6 +14,8 @@ function lPad (input) {
 
 var inSingleQuote = false;
 var inDoubleQuote = false;
+var inSlashStar = false;
+var inSlashSlash = false;
 var inEscape = 0;
 
 for (var i = 0; i < input.length; ++i) {
@@ -29,6 +31,36 @@ for (var i = 0; i < input.length; ++i) {
   } else if (inEscape > 0) {
     output += input[i];
     --inEscape;
+  } else if (unicode === '2f') {
+    // /
+    if (inSingleQuote || inDoubleQuote) {
+      output += input[i];
+    } else if (input[i + 1] === '*' && !inSlashSlash && !inSlashStar) {
+      // /*
+      inSlashStar = true;
+    } else if (input[i + 1] === '/' && !inSlashSlash && !inSlashStar){
+      // //
+      inSlashSlash = true;
+    }
+  } else if (unicode === '2a') {
+    // *
+    if (input[i + 1] === '/' && inSlashStar) {
+      if (inSingleQuote || inDoubleQuote) {
+        output += input[i];
+      } else {
+        // */
+        inSlashStar = false;
+      }
+    }
+  } else if (inSlashStar) {
+    continue;
+  } else if (inSlashSlash) {
+    if (unicode === 'a') {
+      inSlashSlash = false;
+      output += input[i];
+    } else {
+      continue;
+    }
   } else if (unicode === '5c') {
     // \
     output += input[i];
