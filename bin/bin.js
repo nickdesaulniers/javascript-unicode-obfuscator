@@ -6,8 +6,8 @@ var input = fs.readFileSync(process.argv[2], { encoding: 'utf8' });
 
 var output = '';
 
-function lPad (input) {
-  for (var j = input.length; j < 4; ++j) {
+function lPad (input, count) {
+  for (var j = input.length; j < count; ++j) {
     input = '0' + input;
   }
   return input;
@@ -21,12 +21,12 @@ var handler = {
   },
   _toUnicodeStr: function (str) {
     for (var i = 0; i < str.length; ++i) {
-      output += '\\x' + handler._toUnicode(str[i]);
+      output += '\\x' + lPad(handler._toUnicode(str[i]), 2);
     }
   },
   _toUnicodeStr2: function (str) {
     for (var i = 0; i < str.length; ++i) {
-      output += '\\u' + lPad(handler._toUnicode(str[i]));
+      output += '\\u' + lPad(handler._toUnicode(str[i]), 4);
     }
   },
   Literal: function (node) {
@@ -103,26 +103,18 @@ var handler = {
   },
   EmptyStatement: function () {},
   LogicalExpression: function (node) {
-    if (node.left.type === 'AssignmentExpression') {
-      output += '('
-    }
+    output += '(';
     handler[node.left.type](node.left);
-    if (node.left.type === 'AssignmentExpression') {
-      output += ')'
-    }
     output += ' ' + node.operator + ' ';
-    if (node.right.type === 'AssignmentExpression') {
-      output += '('
-    }
     handler[node.right.type](node.right);
-    if (node.right.type === 'AssignmentExpression') {
-      output += ')'
-    }
+    output += ')';
   },
   BinaryExpression: function (node) {
+    output += '(';
     handler[node.left.type](node.left);
     output += ' ' + node.operator + ' ';
     handler[node.right.type](node.right);
+    output += ')';
   },
   Identifier: function (node) {
     handler._toUnicodeStr2(node.name);
@@ -160,31 +152,28 @@ var handler = {
     output += ' ? ';
     handler[node.consequent.type](node.consequent);
     output += ' : ';
+    if (node.alternate.type === 'LogicalExpression') {
+      output += '(';
+    }
     handler[node.alternate.type](node.alternate);
+    if (node.alternate.type === 'LogicalExpression') {
+      output += ')';
+    }
   },
   UnaryExpression: function (node) {
     if (node.prefix) {
       if (node.operator === 'void') {
         handler._toUnicodeStr2('void');
         output += ' ';
+      } else if (node.operator === 'typeof') {
+        handler._toUnicodeStr2('typeof');
+        output += ' ';
       } else {
         output += node.operator;
       }
-      if (node.argument.type === 'AssignmentExpression') {
-        output += '(';
-      }
       handler[node.argument.type](node.argument);
-      if (node.argument.type === 'AssignmentExpression') {
-        output += ')';
-      }
     } else {
-      if (node.argument.type === 'AssignmentExpression') {
-        output += '(';
-      }
       handler[node.argument.type](node.argument);
-      if (node.argument.type === 'AssignmentExpression') {
-        output += ')';
-      }
       output += node.operator;
     }
   },
@@ -220,15 +209,19 @@ var handler = {
     }
   },
   AssignmentExpression: function (node) {
+    output += '(';
     handler[node.left.type](node.left);
     output += ' ' + node.operator + ' ';
     handler[node.right.type](node.right);
+    output += ')';
   },
   ThrowStatement: function (node) {
     output += 'throw ';
     handler[node.argument.type](node.argument);
   },
   NewExpression: function (node) {
+    handler._toUnicodeStr2('new');
+    output += ' ';
     handler[node.callee.type](node.callee);
     output += ' (';
     for (var i = 0; i < node.arguments.length; ++i) {
@@ -283,7 +276,7 @@ var handler = {
       handler[node.test.type](node.test);
     }
     output += ';';
-    if (node.upate) {
+    if (node.update) {
       output += ' ';
       handler[node.update.type](node.update);
     }
