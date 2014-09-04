@@ -129,7 +129,13 @@ var handler = {
   },
   MemberExpression: function (node) {
     if (node.computed) {
+      if (node.object.type === 'LogicalExpression') {
+        output += '(';
+      }
       handler[node.object.type](node.object);
+      if (node.object.type === 'LogicalExpression') {
+        output += ')';
+      }
       output += '[';
       handler[node.property.type](node.property);
       output += ']';
@@ -244,7 +250,10 @@ var handler = {
     handler._toUnicodeStr2('this');
   },
   ObjectExpression: function (node) {
-    output += '{\n';
+    output += '{';
+    if (node.properties.length > 0) {
+      output += '\n';
+    }
     for (var i = 0; i < node.properties.length; ++i) {
       handler[node.properties[i].key.type](node.properties[i].key);
       output += ': ';
