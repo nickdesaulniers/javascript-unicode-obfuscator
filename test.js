@@ -14,4 +14,10 @@ alert('/* // */');
 // /* */
 /* // */
 '/* \/\/ */';
+// ''
+function a () {};
+function b (a, k) {};
+a === b && true && a.b;
+!!true ? true : false;
+[];
 

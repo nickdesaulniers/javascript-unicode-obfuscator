@@ -21,10 +21,11 @@ var inEscape = 0;
 for (var i = 0; i < input.length; ++i) {
   var unicode = input[i].charCodeAt().toString(16);
   // '
-  if (unicode == 27 && !inDoubleQuote) {
+  if (unicode == 27 && !inDoubleQuote && !inSlashStar && !inSlashSlash) {
     inSingleQuote = !inSingleQuote;
     output += input[i];
-  } else if (unicode == 22 && !inSingleQuote) {
+  } else if (unicode == 22 && !inSingleQuote && !inSlashStar &&
+             !inSlashSlash) {
     // "
     inDoubleQuote = !inDoubleQuote;
     output += input[i];
@@ -74,8 +75,12 @@ for (var i = 0; i < input.length; ++i) {
       inEscape += 1;
     }
   } else if (unicode == 28 || unicode == 29 || unicode === '3b' ||
-             unicode == 'a') {
-    // ( ) ; <return>
+             unicode == 'a' || unicode == 20 || unicode == 9 ||
+             unicode === '7b' || unicode === '7d' || unicode === '2c' ||
+             unicode === '3d' || unicode == 26 || unicode === '2e' ||
+             unicode === '3f' || unicode === '3a' || unicode == 21 ||
+             unicode === '5b' || unicode === '5d') {
+    // ( ) ; <return> <space> <tab> { } , = & ? : ! [ ]
     output += input[i];
   } else if (inSingleQuote || inDoubleQuote) {
     output += '\\x' + unicode;
